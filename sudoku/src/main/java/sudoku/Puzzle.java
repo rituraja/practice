@@ -1,5 +1,11 @@
 package sudoku;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +15,7 @@ public class Puzzle {
   private List<List<Integer>> grid;
 
   public Puzzle() {
-    grid = Arrays.asList((Arrays.asList(0, 0, 0, 9, 0, 0, 1, 7, 7)),
+    grid = Arrays.asList((Arrays.asList(0, 0, 0, 9, 0, 0, 1, 7, 0)),
         (Arrays.asList(0, 0, 4, 0, 3, 0, 8, 0, 5)),
         (Arrays.asList(0, 0, 3, 0, 0, 8, 0, 0, 4)),
         (Arrays.asList(7, 0, 9, 6, 0, 0, 0, 0, 8)),
@@ -49,7 +55,10 @@ public class Puzzle {
     String str = "";
 
     for (int i = 0; i < 9; i++) {
-      str = str + grid.get(i) + "\n";
+      for (int val : grid.get(i)) {
+        str = str + val + ",";
+      }
+      str = str.replaceAll(",$", "\n") ;
     }
     return str;
   }
@@ -88,7 +97,7 @@ public class Puzzle {
         nextCell.row++;
       if (nextCell.row == 9)
         return null;
-      if (this.getValue(nextCell.row , nextCell.col) == 0)
+      if (this.getValue(nextCell.row, nextCell.col) == 0)
         return nextCell;
     }
   }
@@ -109,11 +118,41 @@ public class Puzzle {
     miniGrid.col = 3 * (curr.col / 3);
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        if (this.getValue(miniGrid.row + i , miniGrid.col + j) == value) {
+        if (this.getValue(miniGrid.row + i, miniGrid.col + j) == value) {
           return false;
         }
       }
     }
     return true;
+  }
+
+  public static Puzzle fromFile(String filename) {
+    Path path = FileSystems.getDefault().getPath(filename);
+    List<List<Integer>> fileGrid = new ArrayList<>();
+    try {
+      List<String> lines = Files.readAllLines(path, Charset.defaultCharset());
+      for (String line : lines) {
+        List<Integer> rowList = new ArrayList<>(9);
+        for (String num : line.split(",")) {
+          rowList.add(Integer.valueOf(num.trim()));
+        }
+        fileGrid.add(rowList);
+      }
+    } catch (IOException e) {
+      throw new IllegalArgumentException(e);
+    }
+
+    return new Puzzle(fileGrid);
+  }
+
+  public void toFile(String filename) {
+    Path path = FileSystems.getDefault().getPath(filename);
+    String content = this.toString();
+    try {
+      Files.write(path, content.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
 }

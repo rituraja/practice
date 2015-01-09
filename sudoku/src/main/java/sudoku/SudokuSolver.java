@@ -32,8 +32,9 @@ public class SudokuSolver {
   public static void main(String[] args) {
     // TODO Auto-generated method stub
     System.out.println("Finding Solution...");
-    Puzzle solution = SudokuSolver.solve(new Puzzle());
+    Puzzle solution = SudokuSolver.solve(Puzzle.fromFile(args[0]));
     System.out.println(solution);
+    solution.toFile(args[0]+"_result");
   }
 
 }
